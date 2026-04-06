@@ -16,7 +16,7 @@ def unpickle(file):
 
 train_list = glob.glob("./data/test_batch*")
 
-save_path = "./dataset/test"
+save_path = "../dataset/test"
 
 label_name = ["airplane",
               "automobile",

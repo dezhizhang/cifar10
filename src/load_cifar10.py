@@ -31,12 +31,19 @@ def default_loader(path):
 train_transform = transforms.Compose([
     transforms.RandomResizedCrop((28, 28)),
     transforms.RandomHorizontalFlip(),
-    transforms.RandomVerticalFlip(),
-    transforms.RandomRotation(90),
-    transforms.RandomGrayscale(0.1),
-    transforms.ColorJitter(0.3, 0.3, 0.3, 0.3),
+    # transforms.RandomVerticalFlip(),
+    # transforms.RandomRotation(90),
+    # transforms.RandomGrayscale(0.1),
+    # transforms.ColorJitter(0.3, 0.3, 0.3, 0.3),
     transforms.ToTensor(),
 ])
+
+test_transform = transforms.Compose([
+    transforms.Resize((28, 28)),
+    transforms.ToTensor(),
+])
+
+
 
 
 class MyDataset(Dataset):
@@ -65,15 +72,15 @@ class MyDataset(Dataset):
         return len(self.imgs)
 
 
-im_train_list = glob.glob("./dataset/train/*/*.png")
-im_test_list = glob.glob("./dataset/test/*/*.png*")
+im_train_list = glob.glob("../dataset/train/*/*.png")
+im_test_list = glob.glob("../dataset/test/*/*.png*")
 
 
 train_dataset = MyDataset(im_train_list,transform=train_transform)
 test_dataset = MyDataset(im_test_list,transform=transforms.ToTensor())
 
-train_data_loader = DataLoader(dataset=train_dataset,batch_size=6,shuffle=True,num_workers=4)
-test_data_loader = DataLoader(dataset=test_dataset,batch_size=6,shuffle=False,num_workers=4)
+train_loader = DataLoader(dataset=train_dataset,batch_size=6,shuffle=True,num_workers=4)
+test_loader = DataLoader(dataset=test_dataset,batch_size=6,shuffle=False,num_workers=4)
 
 print("num_of_train:", len(train_dataset))
 print("num_of_test:", len(test_dataset))
