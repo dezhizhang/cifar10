@@ -1,97 +1,63 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class VGGbase(nn.Module):
     def __init__(self):
-        super(VGGbase, self).__init__()
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(3,64,kernel_size=3,stride=1,padding=1),
+        super().__init__()
+
+        self.features = nn.Sequential(
+            # block1
+            nn.Conv2d(3, 64, 3, 1, 1),
             nn.BatchNorm2d(64),
-            nn.ReLU()
-        )
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
 
-        self.nax_pooling1 = nn.MaxPool2d(kernel_size=2, stride=2)
-
-        self.conv2_1 = nn.Sequential(
-            nn.Conv2d(64,128,kernel_size=3,stride=1,padding=1),
+            # block2
+            nn.Conv2d(64, 128, 3, 1, 1),
             nn.BatchNorm2d(128),
-            nn.ReLU()
-        )
-
-        self.conv2_2 = nn.Sequential(
-            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(128, 128, 3, 1, 1),
             nn.BatchNorm2d(128),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
+
+            # block3
+            nn.Conv2d(128, 256, 3, 1, 1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(),
+            nn.Conv2d(256, 256, 3, 1, 1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
+
+            # block4
+            nn.Conv2d(256, 512, 3, 1, 1),
+            nn.BatchNorm2d(512),
+            nn.ReLU(),
+            nn.Conv2d(512, 512, 3, 1, 1),
+            nn.BatchNorm2d(512),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),
         )
 
-        self.nax_pooling2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        # 👉 核心：自适应，不用再算尺寸
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
 
-        self.conv3_1 = nn.Sequential(
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU()
-        )
-
-        self.conv3_2 = nn.Sequential(
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU()
-        )
-
-        self.nax_pooling3 = nn.MaxPool2d(kernel_size=2, stride=2,padding=1)
-
-        self.conv4_1 = nn.Sequential(
-            nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU()
-        )
-
-        self.conv3_2 = nn.Sequential(
-            nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU()
-        )
-
-        self.nax_pooling4 = nn.MaxPool2d(kernel_size=2, stride=2, padding=1)
-
-
-        self.fc = nn.Linear(512 * 4 ,10)
-
-
+        self.fc = nn.Linear(512, 10)
 
     def forward(self, x):
-        batch_size = x.size(0)
-        out = self.conv1(x)
-        out = self.nax_pooling1(out)
+        out = self.features(x)
 
-        out = self.conv2_1(out)
-        out = self.conv2_2(out)
-        out = self.nax_pooling2(out)
+        # 👉 不管输入多大，这里都会变成 [B, 512, 1, 1]
+        out = self.pool(out)
 
-        out = self.conv3_1(out)
-        out = self.conv3_2(out)
-        out = self.nax_pooling3(out)
-
-        out = self.conv4_1(out)
-        out = self.conv4_2(out)
-        out = self.nax_pooling4(out)
-
-
-        out = out.view(batch_size, -1)
+        out = out.view(out.size(0), -1)
 
         out = self.fc(out)
-        out = F.log_softmax(out, dim=1)
+
         return out
 
 
 def VGGNet():
     return VGGbase()
-
-
-
-
-
-
-

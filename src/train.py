@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-import torchvision
-import numpy as np
 import os
 from vggnet import VGGNet
 from load_cifar10 import train_loader,test_loader
@@ -42,7 +40,7 @@ def main():
 
     if not os.path.exists("models"):
         os.mkdir("models")
-    torch.save(net.state_dict(), "./models/{}".format(epoch + 1))
+    torch.save(net.state_dict(), "../models/{}".format(epoch + 1))
     scheduler.step()
 
 
