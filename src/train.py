@@ -8,7 +8,7 @@ from load_cifar10 import train_loader,test_loader
 def main():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    epoch_num = 200
+    epoch_num = 2
     lr = 0.001
     net = VGGNet().to(device)
 
@@ -18,7 +18,7 @@ def main():
     # optimizer
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.9)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.9)
 
     for epoch in range(epoch_num):
         print("epoch:", epoch)
@@ -36,12 +36,17 @@ def main():
             loss.backward()
             optimizer.step()
 
+            _,pred = torch.max(output.data, dim=1)
+            correct = pred.eq(labels.data).cpu().sum()
+
             print("loss:", loss.item())
 
-    if not os.path.exists("models"):
-        os.mkdir("models")
-    torch.save(net.state_dict(), "../models/{}".format(epoch + 1))
-    scheduler.step()
+        if not os.path.exists("../models"):
+            os.mkdir("models")
+        torch.save(net.state_dict(), "../models/{}".format(epoch + 1))
+        scheduler.step()
+
+        print("lr is ",optimizer.state_dict()['param_groups'][0]['lr'])
 
 
 
